@@ -1,0 +1,21 @@
+.App {
+  text-align: center;
+}
+
+.Letters {
+  margin: auto;
+  width: 70%;
+}
+
+.Letter {
+  min-width: 50px;
+  min-height: 50px;
+  margin: 5px;
+  display: inline-block;
+  vertical-align: middle;
+  text-align: center;
+  border-width: 1px;
+  border-color: black;
+  background: beige;
+  color: black;
+}
