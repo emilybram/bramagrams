@@ -5,6 +5,7 @@
 .Letters {
   margin: auto;
   width: 100%;
+  height: 500px;
 }
 
 .Letter {
@@ -19,4 +20,20 @@
   background: beige;
   color: black;
   font-weight: bold;
+}
+
+.Button {
+  margin: auto;
+  width: 100px;
+  height: 50px;
+  border-radius: 20px;
+  background: green;
+}
+
+.Board {
+  height: 300px;
+}
+
+.WordBuilder {
+  height: 150px;
 }

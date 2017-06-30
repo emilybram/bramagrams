@@ -4,18 +4,11 @@ import Tile from './Bramagrams';
 class Letter extends Component {
     constructor() {
         super();
-        this.state = {
-            selected: false
-        };
         this.onClicked = this.onClicked.bind(this);
     }
 
     onClicked() {
-        var newState = !this.state.selected;
-        this.setState({
-            selected: newState
-        });
-        this.props.onTileClicked(this.props.letter, this.props.idx, newState);
+        this.props.onTileClicked(this.props.letter, this.props.idx);
     }
 
     render() {

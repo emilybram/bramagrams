@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Board from './Board';
 import WordBuilder from './WordBuilder';
+import YourWords from './YourWords';
 import Utils from './Utils';
 
 class Tile {
@@ -16,16 +17,18 @@ class Bramagrams extends Component {
         this.state = {
             tilesFlipped: [],
             tilesUnflipped: this.getShuffledTiles(),
-            tilesCurrWord: []
+            tilesCurrWord: [],
+            yourWords: []
         };
         this.flipTile = this.flipTile.bind(this);
         this.getShuffledTiles = this.getShuffledTiles.bind(this);
         this.onFlipClicked = this.onFlipClicked.bind(this);
         this.onTileClicked = this.onTileClicked.bind(this);
         this.onWordSubmitted = this.onWordSubmitted.bind(this);
+        this.onCurrTileClicked = this.onCurrTileClicked.bind(this);
     }
 
-    onTileClicked(letter, idx, selected) {
+    onTileClicked(letter, idx) {
         var tile = new Tile(letter, idx);
         var newTilesCurrWord = this.state.tilesCurrWord.slice();
         var newTilesFlipped = this.state.tilesFlipped.slice();
@@ -47,6 +50,28 @@ class Bramagrams extends Component {
         });
     }
 
+    onCurrTileClicked(letter, idx) {
+        var tile = new Tile(letter, idx);
+        var newTilesCurrWord = this.state.tilesCurrWord.slice();
+        var newTilesFlipped = this.state.tilesFlipped.slice();
+        var idx;
+
+        for (var i = 0; i < newTilesCurrWord.length; i++) {
+            if (newTilesCurrWord[i].letter === letter && newTilesCurrWord[i].idx === idx) {
+                idx = i;
+                break;
+            }
+        } 
+        
+        newTilesCurrWord.splice(idx, 1);
+        newTilesFlipped.push(tile);
+
+        this.setState({
+            tilesCurrWord: newTilesCurrWord,
+            tilesFlipped: newTilesFlipped
+        });
+    }
+
     onFlipClicked() {
         if (this.state.tilesUnflipped.length > 0) {
             this.flipTile();
@@ -55,9 +80,12 @@ class Bramagrams extends Component {
         }
     }
 
-    onWordSubmitted() {
+    onWordSubmitted(word) {
+        var newYourWords = this.state.yourWords.slice();
+        newYourWords.push(word);
         this.setState({
-            tilesCurrWord: []
+            tilesCurrWord: [],
+            yourWords: newYourWords
         });
     }
 
@@ -92,7 +120,8 @@ class Bramagrams extends Component {
                 <div className="Button" onClick={this.onFlipClicked}>
                     Flip
                 </div>
-                <WordBuilder tiles={this.state.tilesCurrWord} onWordSubmitted={this.onWordSubmitted} />
+                <WordBuilder tiles={this.state.tilesCurrWord} onCurrTileClicked={this.onCurrTileClicked} onWordSubmitted={this.onWordSubmitted} />
+                <YourWords words={this.state.yourWords} />
             </div>
         );
     }
