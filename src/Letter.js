@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Tile from './Bramagrams';
+import Tile from './App';
 
 class Letter extends Component {
     constructor() {
@@ -8,13 +8,15 @@ class Letter extends Component {
     }
 
     onClicked() {
-        this.props.onTileClicked(this.props.letter, this.props.idx);
+        if (this.props.onTileClicked) {
+            this.props.onTileClicked(this.props.letter, this.props.idx);
+        }
     }
 
     render() {
         return (
             <div className="Letter" onClick={this.onClicked}>
-                {this.props.letter}
+                <div className="LetterText"> {this.props.letter} </div>
             </div>
         );
     }

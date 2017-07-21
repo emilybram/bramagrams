@@ -1,15 +1,197 @@
 import React, { Component } from 'react';
+import Board from './Board';
+import WordBuilder from './WordBuilder';
+import Words from './Words';
+import Utils from './Utils';
+import io from 'socket.io-client';
 import './App.css';
-import Bramagrams from './Bramagrams';
+
+class Tile {
+    constructor(letter, idx) {
+        this.letter = letter;
+        this.idx = idx;
+    }
+}
 
 class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <Bramagrams />
-      </div>
-    );
-  }
+    constructor() {
+        super();
+        this.state = {
+            tilesFlipped: [],
+            tilesUnflipped: [],
+            tilesCurrWord: [],
+            yourWords: [],
+            opponentWords: []
+        };
+
+        var app = this;
+        this.socket = io('http://localhost:7912');
+
+        this.socket.on('playerId', function(playerId){
+            this.playerId = playerId;
+        });
+
+        this.socket.on('gameTiles', function(gameTiles){
+            app.setState({
+                tilesUnflipped: gameTiles
+            });
+        });
+
+        this.socket.on('word', function(newGameState) {
+            var newWords = app.state.opponentWords.slice();
+            newWords.push(newGameState.word);
+            app.setState({
+                opponentWords: newWords,
+                tilesFlipped: newGameState.tilesFlipped
+            });
+        });
+        this.socket.on('tileFlip', function() {
+            app.flipTile();
+        });
+
+        this.flipTile = this.flipTile.bind(this);
+        this.onTileClicked = this.onTileClicked.bind(this);
+        this.onWordSubmitted = this.onWordSubmitted.bind(this);
+        this.onCurrTileClicked = this.onCurrTileClicked.bind(this);
+        this.handleKeyDown = this.handleKeyDown.bind(this);
+        this.getTileWithLetter = this.getTileWithLetter.bind(this);
+    }
+
+
+    componentWillMount() {
+        document.addEventListener("keyup", this.handleKeyDown);
+    }
+
+
+    componentWillUnmount() {
+        document.removeEventListener("keyup", this.handleKeyDown);
+    }
+
+    handleKeyDown(event) {
+        if (event.keyCode === 32) {
+            // Spacebar
+            this.flipTile();
+            this.socket.emit("tileFlip");
+        } else if (event.keyCode === 13) {
+            // Enter
+            if (Utils.isValid(Utils.asWord(this.state.tilesCurrWord))) {
+                this.onWordSubmitted();
+            } 
+        } else if (event.keyCode === 8) {
+            // Delete
+            if (this.state.tilesCurrWord.length > 0) {
+                var tile = this.state.tilesCurrWord[this.state.tilesCurrWord.length - 1];
+                this.onCurrTileClicked(tile.letter, tile.idx);
+            }
+        } else if (event.keyCode >= 65 && event.keyCode <= 90) {
+            // A through Z
+            var tile = this.getTileWithLetter(Utils.keyCodes[event.keyCode].toUpperCase());
+            if (tile) {
+                this.onTileClicked(tile.letter, tile.idx);
+            }
+        }
+    }
+
+    getTileWithLetter(letter) {
+        for (var i = 0; i < this.state.tilesFlipped.length; i++) {
+            if (this.state.tilesFlipped[i].letter === letter) {
+                return this.state.tilesFlipped[i]
+            }
+        }
+        return null;
+    }
+
+    onTileClicked(letter, idx) {
+        var tile = new Tile(letter, idx);
+        var newTilesCurrWord = this.state.tilesCurrWord.slice();
+        var newTilesFlipped = this.state.tilesFlipped.slice();
+        var idx;
+
+        for (var i = 0; i < newTilesFlipped.length; i++) {
+            if (newTilesFlipped[i].letter === letter && newTilesFlipped[i].idx === idx) {
+                idx = i;
+                break;
+            }
+        } 
+        
+        newTilesCurrWord.push(tile);
+        newTilesFlipped.splice(idx, 1);
+
+        this.setState({
+            tilesCurrWord: newTilesCurrWord,
+            tilesFlipped: newTilesFlipped
+        });
+    }
+
+    onCurrTileClicked(letter, idx) {
+        var tile = new Tile(letter, idx);
+        var newTilesCurrWord = this.state.tilesCurrWord.slice();
+        var newTilesFlipped = this.state.tilesFlipped.slice();
+        var idx;
+
+        for (var i = 0; i < newTilesCurrWord.length; i++) {
+            if (newTilesCurrWord[i].letter === letter && newTilesCurrWord[i].idx === idx) {
+                idx = i;
+                break;
+            }
+        } 
+        
+        newTilesCurrWord.splice(idx, 1);
+        newTilesFlipped.push(tile);
+
+        this.setState({
+            tilesCurrWord: newTilesCurrWord,
+            tilesFlipped: newTilesFlipped
+        });
+    }
+
+    onFlipClicked() {
+        if (this.state.tilesUnflipped.length > 0) {
+            this.flipTile();
+        } else {
+            alert("No more tiles!");
+        }
+    }
+
+    onWordSubmitted() {
+        var word = Utils.asWord(this.state.tilesCurrWord);
+        var newYourWords = this.state.yourWords.slice();
+        newYourWords.push(word);
+
+        this.socket.emit('word', {word: word, tilesFlipped: this.state.tilesFlipped});
+
+        this.setState({
+            tilesCurrWord: [],
+            yourWords: newYourWords
+        });
+    }
+
+    flipTile() {
+        var newTilesFlipped = this.state.tilesFlipped.slice();
+        var newTilesUnflipped = this.state.tilesUnflipped.slice();
+        var newTile = newTilesUnflipped.pop();
+        newTilesFlipped.push(newTile);
+        this.setState({
+            tilesFlipped: newTilesFlipped,
+            tilesUnflipped: newTilesUnflipped,
+            tilesCurrWord: []
+        });
+    }
+
+    render() {
+        return (
+            <div className="App">
+                <div className="TilesSection">
+                    <Board tiles={this.state.tilesFlipped} onTileClicked={this.onTileClicked} />
+                </div>
+                <WordBuilder tiles={this.state.tilesCurrWord} onCurrTileClicked={this.onCurrTileClicked} onWordSubmitted={this.onWordSubmitted} />
+                <div className="AllWords">
+                    <Words words={this.state.yourWords} className="YourWords" />
+                    <Words words={this.state.opponentWords} className="OpponentWords" />
+                </div>
+            </div>
+        );
+    }
 }
 
 export default App;
