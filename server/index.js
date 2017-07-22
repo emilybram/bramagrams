@@ -74,8 +74,9 @@ var server = app.listen(PORT, function() {
 var io = require('socket.io').listen(server);
 
 io.on('connection', function(socket){
-    console.log("Player " + socket.id + " has connected.");
-    
+
+    //console.log("Player " + socket.id + " has entered game "+ namespace + ".");
+    //var nsp = io.of('/' + namespace);
     socket.emit('playerId', socket.id);
     socket.emit('gameTiles', gameTiles);
 

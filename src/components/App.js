@@ -27,6 +27,8 @@ class App extends Component {
         var app = this;
         this.socket = io();
 
+        // Need to figure out how to get path and do IO namespace
+
         this.socket.on('playerId', function(playerId){
             app.playerId = playerId;
         });
@@ -70,8 +72,12 @@ class App extends Component {
     handleKeyDown(event) {
         if (event.keyCode === 32) {
             // Spacebar
-            this.flipTile();
-            this.socket.emit("tileFlip");
+            if (this.state.tilesUnflipped.length > 0) {
+                this.flipTile();
+                this.socket.emit("tileFlip");
+            } else {
+            alert("No more tiles!");
+            }
         } else if (event.keyCode === 13) {
             // Enter
             if (Utils.isValid(Utils.asWord(this.state.tilesCurrWord))) {
@@ -145,14 +151,6 @@ class App extends Component {
         });
     }
 
-    onFlipClicked() {
-        if (this.state.tilesUnflipped.length > 0) {
-            this.flipTile();
-        } else {
-            alert("No more tiles!");
-        }
-    }
-
     onWordSubmitted() {
         var word = Utils.asWord(this.state.tilesCurrWord);
         var newYourWords = this.state.yourWords.slice();
@@ -170,6 +168,9 @@ class App extends Component {
         var newTilesFlipped = this.state.tilesFlipped.slice();
         var newTilesUnflipped = this.state.tilesUnflipped.slice();
         var newTile = newTilesUnflipped.pop();
+        for (var i = 0; i < this.state.tilesCurrWord.length; i++) {
+            newTilesFlipped.push(this.state.tilesCurrWord[i]);
+        }
         newTilesFlipped.push(newTile);
         this.setState({
             tilesFlipped: newTilesFlipped,
