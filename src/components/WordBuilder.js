@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Letter from './Letter';
-import Utils from './Utils';
+import Utils from '../Utils';
 
 class WordBuilder extends Component {
     render() {

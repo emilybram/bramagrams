@@ -1,7 +1,9 @@
-var app = require('express')();
-var io = require('socket.io')();
+'use strict';
 
-const PORT = 7912;
+const app = require('./app');
+var server = require('http').Server(app);
+
+const PORT = process.env.PORT || 9000;
 
 var letterFreqs = {
         'A': 13,
@@ -65,9 +67,11 @@ function getShuffledTiles() {
 
 var gameTiles = getShuffledTiles();
 
-app.get('/', function(req, res){
-  res.sendfile('index.html');
+var server = app.listen(PORT, function() {
+  console.log(`App listening on port ${PORT}`);
 });
+
+var io = require('socket.io').listen(server);
 
 io.on('connection', function(socket){
     console.log("Player " + socket.id + " has connected.");
@@ -77,20 +81,15 @@ io.on('connection', function(socket){
 
     socket.on('word', function({word: word, tilesFlipped: tilesFlipped}){
         console.log("Player " + socket.id + " submitted " + word);
-        socket.broadcast.emit('word', word);
+        socket.broadcast.emit('word', {word: word, tilesFlipped: tilesFlipped});
     });
 
-    socket.on('tileFlip', function(tile){
-        console.log("Player " + socket.id + " flipped " + tile.letter);
+    socket.on('tileFlip', function(){
+        console.log("Player " + socket.id + " flipped tile");
         socket.broadcast.emit('tileFlip');
     });
 
     socket.on('disconnect', function () {
         console.log("Player " + socket.id + " has disconnected.");
     });
-});
-
-
-io.listen(PORT, function () {
-    console.log("Listening on " + PORT);
 });

@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import Board from './Board';
 import WordBuilder from './WordBuilder';
 import Words from './Words';
-import Utils from './Utils';
+import Utils from '../Utils';
+import '../App.css';
 import io from 'socket.io-client';
-import './App.css';
 
 class Tile {
     constructor(letter, idx) {
@@ -25,10 +25,10 @@ class App extends Component {
         };
 
         var app = this;
-        this.socket = io('http://localhost:7912');
+        this.socket = io();
 
         this.socket.on('playerId', function(playerId){
-            this.playerId = playerId;
+            app.playerId = playerId;
         });
 
         this.socket.on('gameTiles', function(gameTiles){
