@@ -1,71 +1,11 @@
 'use strict';
 
 const app = require('./app');
-var server = require('http').Server(app);
+var http = require('http').Server(app);
 
 const PORT = process.env.PORT || 9000;
 
-var letterFreqs = {
-        'A': 13,
-        'B': 3,
-        'C': 3,
-        'D': 6,
-        'E': 18,
-        'F': 3,
-        'G': 4,
-        'H': 3,
-        'I': 12,
-        'J': 2,
-        'K': 2,
-        'L': 5,
-        'M': 3,
-        'N': 8,
-        'O': 11,
-        'P': 3,
-        'Q': 2,
-        'R': 9,
-        'S': 6,
-        'T': 9,
-        'U': 6,
-        'V': 3,
-        'W': 3,
-        'X': 2,
-        'Y': 3,
-        'Z': 2
-    };
-    
-    class Tile {
-    constructor(letter, idx) {
-        this.letter = letter;
-        this.idx = idx;
-    }
-}
-
-function shuffle(arr) {
-    var i = 0, j = 0, temp = null;
-
-    for (i = arr.length - 1; i > 0; i -= 1) {
-        j = Math.floor(Math.random() * (i + 1));
-        temp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = temp;
-    }
-}
-
-function getShuffledTiles() {
-    var tiles = [];
-    var count = 0;
-        for (var letter in letterFreqs) {
-        for (var i = 0; i < letterFreqs[letter]; i++) {
-            tiles.push(new Tile(letter, count));
-            count++;
-        }
-    }
-    shuffle(tiles);
-    return tiles;
-}
-
-var gameTiles = getShuffledTiles();
+var games = {};
 
 var server = app.listen(PORT, function() {
   console.log(`App listening on port ${PORT}`);
@@ -74,20 +14,41 @@ var server = app.listen(PORT, function() {
 var io = require('socket.io').listen(server);
 
 io.on('connection', function(socket){
+    console.log("socket connected");
+    socket.on('gameRoom', function({gameRoom: gameId}){
+        console.log("Player " + socket.id + " joining game " + gameId);
+        socket.gameRoom = gameId
+        socket.join(gameId);
+        socket.emit('playerId', socket.id);
+        if (!games[gameId]) {
+            games[gameId] = [socket.id];
+            socket.emit('firstPlayer');
+        } else {
+            games[gameId].push(socket.id);
+            socket.to(games[gameId][0]).emit('requestTiles', {socketId: socket.id});
+        }
+    });
 
-    //console.log("Player " + socket.id + " has entered game "+ namespace + ".");
-    //var nsp = io.of('/' + namespace);
-    socket.emit('playerId', socket.id);
-    socket.emit('gameTiles', gameTiles);
+    socket.on('sendTiles', function({socketId: socketId,
+        tilesFlipped: tilesFlipped,
+        tilesUnflipped: tilesUnflipped}){
+        console.log("Sending player " + socketId + " tiles");
+        socket.to(socketId).emit('receiveTiles', {
+            tilesFlipped: tilesFlipped,
+            tilesUnflipped: tilesUnflipped
+        });
+    });
 
-    socket.on('word', function({word: word, tilesFlipped: tilesFlipped}){
+    socket.on('word', function({word: word, tilesFlipped: tilesFlipped, tilesUnflipped: tilesUnflipped}){
         console.log("Player " + socket.id + " submitted " + word);
-        socket.broadcast.emit('word', {word: word, tilesFlipped: tilesFlipped});
+        socket.to(socket.gameRoom).emit('word', {word: word, 
+            tilesFlipped: tilesFlipped,
+            tilesUnflipped: tilesUnflipped});
     });
 
     socket.on('tileFlip', function(){
         console.log("Player " + socket.id + " flipped tile");
-        socket.broadcast.emit('tileFlip');
+        socket.broadcast.to(socket.gameRoom).emit('tileFlip');
     });
 
     socket.on('disconnect', function () {

@@ -3,7 +3,7 @@ import Board from './Board';
 import WordBuilder from './WordBuilder';
 import Words from './Words';
 import Utils from '../Utils';
-import '../App.css';
+import '../styles/App.css';
 import io from 'socket.io-client';
 
 class Tile {
@@ -14,8 +14,9 @@ class Tile {
 }
 
 class App extends Component {
-    constructor() {
-        super();
+    constructor(props) {
+        super(props);
+
         this.state = {
             tilesFlipped: [],
             tilesUnflipped: [],
@@ -27,15 +28,33 @@ class App extends Component {
         var app = this;
         this.socket = io();
 
-        // Need to figure out how to get path and do IO namespace
+        this.socket.emit('gameRoom', {gameRoom: this.props.gameId});
 
         this.socket.on('playerId', function(playerId){
             app.playerId = playerId;
         });
 
-        this.socket.on('gameTiles', function(gameTiles){
+        this.socket.on('requestTiles', function({socketId: socketId}){
+            alert("Player " + socketId + " requesting tiles");
+            app.socket.emit('sendTiles', {
+                socketId: socketId,
+                tilesFlipped: app.state.tilesFlipped,
+                tilesUnflipped: app.state.tilesUnflipped
+            });
+        });
+
+        this.socket.on('receiveTiles', function({tilesFlipped: tilesFlipped, tilesUnflipped: tilesUnflipped}){
+            alert("Player " + app.socket.id + " receiving tiles: " + tilesFlipped + ", " + tilesUnflipped);
             app.setState({
-                tilesUnflipped: gameTiles
+                tilesFlipped: tilesFlipped,
+                tilesUnflipped: tilesUnflipped
+            });
+        });
+
+        this.socket.on('firstPlayer', function(){
+            app.setState({
+                tilesUnflipped: Utils.getShuffledTiles(),
+                tilesFlipped: []
             });
         });
 
@@ -44,7 +63,8 @@ class App extends Component {
             newWords.push(newGameState.word);
             app.setState({
                 opponentWords: newWords,
-                tilesFlipped: newGameState.tilesFlipped
+                tilesFlipped: newGameState.tilesFlipped,
+                tilesUnflipped: newGameState.tilesUnflipped
             });
         });
         this.socket.on('tileFlip', function() {
@@ -67,6 +87,10 @@ class App extends Component {
 
     componentWillUnmount() {
         document.removeEventListener("keyup", this.handleKeyDown);
+    }
+
+    getNextTile() {
+        return new Tile();
     }
 
     handleKeyDown(event) {
@@ -156,7 +180,10 @@ class App extends Component {
         var newYourWords = this.state.yourWords.slice();
         newYourWords.push(word);
 
-        this.socket.emit('word', {word: word, tilesFlipped: this.state.tilesFlipped});
+        this.socket.emit('word', {word: word, 
+            tilesFlipped: this.state.tilesFlipped,
+            tilesUnflipped: this.state.tilesUnflipped
+        });
 
         this.setState({
             tilesCurrWord: [],

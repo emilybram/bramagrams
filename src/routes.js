@@ -9,9 +9,13 @@ const Routes = (props) => (
   <BrowserRouter {...props}>
      <div>
         <Route exact path="/" component={MainPage} />
-        <Route path="/:number" component={App} />
+        <Route path="/:gameId" component={GameApp} />
     </div>
   </BrowserRouter>
 );
+
+const GameApp = ({ match }) => {
+  return <App gameId={match.params.gameId} />
+}
 
 export default Routes;
