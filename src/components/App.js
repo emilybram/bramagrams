@@ -13,11 +13,25 @@ class Tile {
     }
 }
 
+class WaitingScreen extends Component {
+    render() {
+        return (
+            <div class="WaitingScreen">
+                Send your friend this link: 
+                <div class="GameUrl">
+                    localhost:9000/{this.props.gameId}
+                </div>
+            </div>
+            );
+    }
+}
+
 class App extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
+            waitingForOpponent: true,
             tilesFlipped: [],
             tilesUnflipped: [],
             tilesCurrWord: [],
@@ -34,8 +48,10 @@ class App extends Component {
             app.playerId = playerId;
         });
 
-        this.socket.on('requestTiles', function({socketId: socketId}){
-            alert("Player " + socketId + " requesting tiles");
+        this.socket.on('secondPlayerJoin', function({socketId: socketId}){
+            app.setState({
+                waitingForOpponent: false
+            });
             app.socket.emit('sendTiles', {
                 socketId: socketId,
                 tilesFlipped: app.state.tilesFlipped,
@@ -44,12 +60,12 @@ class App extends Component {
         });
 
         this.socket.on('receiveTiles', function({tilesFlipped: tilesFlipped, tilesUnflipped: tilesUnflipped}){
-            alert("Player " + app.socket.id + " receiving tiles: " + tilesFlipped + ", " + tilesUnflipped);
             app.setState({
                 tilesFlipped: tilesFlipped,
-                tilesUnflipped: tilesUnflipped
-            });
+                tilesUnflipped: tilesUnflipped,
+                waitingForOpponent: false
         });
+    });
 
         this.socket.on('firstPlayer', function(){
             app.setState({
@@ -79,7 +95,6 @@ class App extends Component {
         this.getTileWithLetter = this.getTileWithLetter.bind(this);
     }
 
-
     componentWillMount() {
         document.addEventListener("keyup", this.handleKeyDown);
     }
@@ -94,13 +109,16 @@ class App extends Component {
     }
 
     handleKeyDown(event) {
+        if (this.state.waitingForOpponent) {
+            return;
+        }
         if (event.keyCode === 32) {
             // Spacebar
             if (this.state.tilesUnflipped.length > 0) {
                 this.flipTile();
                 this.socket.emit("tileFlip");
             } else {
-            alert("No more tiles!");
+                alert("No more tiles!");
             }
         } else if (event.keyCode === 13) {
             // Enter
@@ -207,7 +225,10 @@ class App extends Component {
     }
 
     render() {
-        return (
+        if (this.state.waitingForOpponent) {
+            return (<WaitingScreen gameId={this.props.gameId}/>);
+        }
+        else return (
             <div className="App">
                 <div className="TilesSection">
                     <Board tiles={this.state.tilesFlipped} onTileClicked={this.onTileClicked} />

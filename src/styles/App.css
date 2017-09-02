@@ -90,3 +90,12 @@
 .AllWords {
   width: 100%;
 }
+
+.WaitingScreen {
+  align-self: center;
+  border: 2px dashed black;
+}
+
+.GameUrl {
+  font-family: monospace
+}
