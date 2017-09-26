@@ -16,10 +16,10 @@ class Tile {
 class WaitingScreen extends Component {
     render() {
         return (
-            <div class="WaitingScreen">
+            <div className="WaitingScreen">
                 Send your friend this link: 
-                <div class="GameUrl">
-                    localhost:9000/{this.props.gameId}
+                <div className="GameUrl">
+                    process.env.PWD + {this.props.gameId}
                 </div>
             </div>
             );
