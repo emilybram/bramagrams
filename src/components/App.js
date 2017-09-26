@@ -19,7 +19,7 @@ class WaitingScreen extends Component {
             <div className="WaitingScreen">
                 Send your friend this link: 
                 <div className="GameUrl">
-                    process.env.PWD + {this.props.gameId}
+                    https://bramagrams.herokuapp.com/{this.props.gameId}
                 </div>
             </div>
             );
