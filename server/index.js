@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 9000;
 
 var games = {};
 
-var server = app.listen(PORT, function() {
+var server = http.listen(PORT, function() {
   console.log(`App listening on port ${PORT}`);
 });
 
