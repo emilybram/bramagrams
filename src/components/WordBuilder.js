@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
 import Letter from './Letter';
-import Utils from '../Utils';
+import Utils from '../utils';
 
 class WordBuilder extends Component {
     render() {
         var tilesHTML = [];
         var tile;
+        var isValid = Utils.isValid(Utils.asWord(this.props.tiles));
+
         for (var i = 0; i < this.props.tiles.length; i++) {
             tile = this.props.tiles[i];
             tilesHTML.push(
@@ -14,7 +16,7 @@ class WordBuilder extends Component {
         }
 
         return (
-            <div className={"WordBuilder" + (!Utils.isValid(Utils.asWord(this.props.tiles)) ? " invalid" : "")}>
+            <div className={"WordBuilder" +  (isValid ? "" : " invalid")}>
                 {tilesHTML}
             </div>
         );

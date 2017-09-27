@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import Board from './Board';
+import WaitingPage from './WaitingPage';
 import WordBuilder from './WordBuilder';
 import Words from './Words';
-import Utils from '../Utils';
+import Utils from '../utils';
 import '../styles/App.css';
 import io from 'socket.io-client';
 
@@ -10,19 +11,6 @@ class Tile {
     constructor(letter, idx) {
         this.letter = letter;
         this.idx = idx;
-    }
-}
-
-class WaitingScreen extends Component {
-    render() {
-        return (
-            <div className="WaitingScreen">
-                Send your friend this link: 
-                <div className="GameUrl">
-                    https://bramagrams.herokuapp.com/{this.props.gameId}
-                </div>
-            </div>
-            );
     }
 }
 
@@ -39,11 +27,22 @@ class App extends Component {
             opponentWords: []
         };
 
-        var app = this;
-
-        this.socket = io();
-
+        this.initSocket();
         this.socket.emit('gameRoom', {gameRoom: this.props.gameId});
+    }
+
+    componentWillMount() {
+        document.addEventListener("keyup", this.handleKeyDown.bind(this));
+    }
+
+
+    componentWillUnmount() {
+        document.removeEventListener("keyup", this.handleKeyDown.bind(this));
+    }
+
+    initSocket() {
+        var app = this; 
+        this.socket = io();
 
         this.socket.on('playerId', function(playerId){
             app.playerId = playerId;
@@ -78,6 +77,7 @@ class App extends Component {
         this.socket.on('word', function(newGameState) {
             var newWords = app.state.opponentWords.slice();
             newWords.push(newGameState.word);
+
             app.setState({
                 opponentWords: newWords,
                 tilesFlipped: newGameState.tilesFlipped,
@@ -87,26 +87,6 @@ class App extends Component {
         this.socket.on('tileFlip', function() {
             app.flipTile();
         });
-
-        this.flipTile = this.flipTile.bind(this);
-        this.onTileClicked = this.onTileClicked.bind(this);
-        this.onWordSubmitted = this.onWordSubmitted.bind(this);
-        this.onCurrTileClicked = this.onCurrTileClicked.bind(this);
-        this.handleKeyDown = this.handleKeyDown.bind(this);
-        this.getTileWithLetter = this.getTileWithLetter.bind(this);
-    }
-
-    componentWillMount() {
-        document.addEventListener("keyup", this.handleKeyDown);
-    }
-
-
-    componentWillUnmount() {
-        document.removeEventListener("keyup", this.handleKeyDown);
-    }
-
-    getNextTile() {
-        return new Tile();
     }
 
     handleKeyDown(event) {
@@ -227,14 +207,16 @@ class App extends Component {
 
     render() {
         if (this.state.waitingForOpponent) {
-            return (<WaitingScreen gameId={this.props.gameId}/>);
+            return (<WaitingPage gameId={this.props.gameId}/>);
         }
         else return (
             <div className="App">
                 <div className="TilesSection">
-                    <Board tiles={this.state.tilesFlipped} onTileClicked={this.onTileClicked} />
+                    <Board tiles={this.state.tilesFlipped} onTileClicked={this.onTileClicked.bind(this)} />
                 </div>
-                <WordBuilder tiles={this.state.tilesCurrWord} onCurrTileClicked={this.onCurrTileClicked} onWordSubmitted={this.onWordSubmitted} />
+                <WordBuilder tiles={this.state.tilesCurrWord} 
+                            onCurrTileClicked={this.onCurrTileClicked.bind(this)} 
+                            onWordSubmitted={this.onWordSubmitted.bind(this)} />
                 <div className="AllWords">
                     <Words words={this.state.yourWords} className="YourWords" />
                     <Words words={this.state.opponentWords} className="OpponentWords" />

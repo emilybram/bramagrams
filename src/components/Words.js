@@ -3,7 +3,6 @@ import Letter from './Letter';
 
 class Word extends Component {
     render() {
-
         var wordHTML = [];
         for (var i = 0; i < this.props.word.length; i++) {
             wordHTML.push(
