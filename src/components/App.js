@@ -40,6 +40,7 @@ class App extends Component {
         };
 
         var app = this;
+
         this.socket = io();
 
         this.socket.emit('gameRoom', {gameRoom: this.props.gameId});
