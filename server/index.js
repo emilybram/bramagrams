@@ -1,20 +1,16 @@
 'use strict';
 
 const app = require('./app');
-const socketIO = require('socket.io');
-const http = require('http').Server(app);
+const server = require('http').Server(app);
+const io = require('socket.io')(server);
 
 const PORT = process.env.PORT || 9000;
 
-var games = {};
-
-var server = http.listen(PORT, function() {
+server.listen(PORT, function() {
   console.log(`App listening on port ${PORT}`);
 });
 
-const io = socketIO(server);
-
-//var io = require('socket.io').listen(server);
+var games = {};
 
 io.on('connection', function(socket){
     console.log("socket connected");
