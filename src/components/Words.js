@@ -1,40 +1,24 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Letter from './Letter';
 
-class Word extends Component {
-    render() {
-        var wordHTML = [];
-        for (var i = 0; i < this.props.word.length; i++) {
-            wordHTML.push(
-                <Letter letter={this.props.word[i]} key={i} />
-                );
-        }
-
+const Word = (props) => {
         return (
             <div className="Word">
-                {wordHTML}
+                {props.word.split('').map((letter, idx) => {
+                    return (<Letter letter={letter} key={idx} />);
+                })}
             </div>
         );
-    }
-}
+};
 
-class Words extends Component {
-    render() {
-        var wordsHTML = [];
-        var word;
-        for (var i = 0; i < this.props.words.length; i++) {
-            word = this.props.words[i];
-            wordsHTML.push(
-                <Word word={word} key={i} />
-            );
-        }
-
-        return (
-            <div className={"Words " + this.props.className}>
-                {wordsHTML}
-            </div>
-        );
-    }
-}
+const Words = (props) => {
+    return (
+        <div className={"Words " + props.className}>
+            {props.words.map((word, idx) => {
+                return (<Word word={word} key={idx} />);
+            })}
+        </div>
+    );
+};
 
 export default Words;

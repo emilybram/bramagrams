@@ -1,12 +1,5 @@
 var words = require('./data/dictionary.json');
 
-class Tile {
-    constructor(letter, idx) {
-        this.letter = letter;
-        this.idx = idx;
-    }
-}
-
 class Utils {
     
     static keyCodes = {
@@ -79,17 +72,15 @@ static shuffle(arr) {
     }
 }
 
-static getShuffledTiles() {
-    var tiles = [];
-    var count = 0;
+static getShuffledLetters() {
+    var letters = [];
         for (var letter in Utils.letterFreqs) {
         for (var i = 0; i < Utils.letterFreqs[letter]; i++) {
-            tiles.push(new Tile(letter, count));
-            count++;
+            letters.push(letter);
         }
     }
-    Utils.shuffle(tiles);
-    return tiles;
+    Utils.shuffle(letters);
+    return letters;
 }
 
     static createDictionary() {
@@ -107,14 +98,6 @@ static getShuffledTiles() {
     }
 
     static dictionary = Utils.createDictionary();
-
-    static asWord(tiles) {
-        var word = "";
-        for (var i = 0; i < tiles.length; i++) {
-            word = word.concat(tiles[i].letter);
-        }
-        return word;
-    }
 
     static isValid(word) {
         if (word.length > 0) {

@@ -1,16 +1,14 @@
-import React, { Component } from 'react';
+import React from 'react';
 
-class WaitingPage extends Component {
-    render() {
+const WaitingPage = (props) => {
         return (
             <div className="WaitingPage">
                 Send your friend this link: 
                 <div className="GameUrl">
-                    https://bramagrams.herokuapp.com/{this.props.gameId}
+                    https://bramagrams.herokuapp.com/game/{props.gameId}
                 </div>
             </div>
             );
-    }
 }
 
 export default WaitingPage;

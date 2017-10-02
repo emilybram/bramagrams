@@ -23,10 +23,6 @@
   box-shadow: 2px 2px #ddddc1;
 }
 
-.TilesSection {
-  overflow: hidden;
-}
-
 .Board {
   overflow: hidden;
   height: 100px;

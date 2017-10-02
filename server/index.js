@@ -4,7 +4,11 @@ const app = require('./app');
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
+// Prod
 const PORT = process.env.PORT || 9000;
+
+// Dev
+//const PORT = 3001;
 
 server.listen(PORT, function() {
   console.log(`App listening on port ${PORT}`);
@@ -12,7 +16,7 @@ server.listen(PORT, function() {
 
 var games = {};
 
-io.on('connection', function(socket){
+io.of('/game').on('connection', function(socket){
     console.log("socket connected");
     socket.on('gameRoom', function({gameRoom: gameId}){
         console.log("Player " + socket.id + " joining game " + gameId);
@@ -28,26 +32,26 @@ io.on('connection', function(socket){
         }
     });
 
-    socket.on('sendTiles', function({socketId: socketId,
-        tilesFlipped: tilesFlipped,
-        tilesUnflipped: tilesUnflipped}){
-        console.log("Sending player " + socketId + " tiles");
-        socket.to(socketId).emit('receiveTiles', {
-            tilesFlipped: tilesFlipped,
-            tilesUnflipped: tilesUnflipped
+    socket.on('sendLetters', function({socketId: socketId,
+        lettersFlipped: lettersFlipped,
+        lettersUnflipped: lettersUnflipped}){
+        console.log("Sending player " + socketId + " letters");
+        socket.to(socketId).emit('receiveLetters', {
+            lettersFlipped: lettersFlipped,
+            lettersUnflipped: lettersUnflipped
         });
     });
 
-    socket.on('word', function({word: word, tilesFlipped: tilesFlipped, tilesUnflipped: tilesUnflipped}){
+    socket.on('word', function({word: word, lettersFlipped: lettersFlipped, lettersUnflipped: lettersUnflipped}){
         console.log("Player " + socket.id + " submitted " + word);
         socket.to(socket.gameRoom).emit('word', {word: word, 
-            tilesFlipped: tilesFlipped,
-            tilesUnflipped: tilesUnflipped});
+            lettersFlipped: lettersFlipped,
+            lettersUnflipped: lettersUnflipped});
     });
 
-    socket.on('tileFlip', function(){
-        console.log("Player " + socket.id + " flipped tile");
-        socket.broadcast.to(socket.gameRoom).emit('tileFlip');
+    socket.on('letterFlip', function(){
+        console.log("Player " + socket.id + " flipped letter");
+        socket.broadcast.to(socket.gameRoom).emit('letterFlip');
     });
 
     socket.on('disconnect', function () {

@@ -7,22 +7,15 @@ import Utils from '../utils';
 import '../styles/App.css';
 import io from 'socket.io-client';
 
-class Tile {
-    constructor(letter, idx) {
-        this.letter = letter;
-        this.idx = idx;
-    }
-}
-
 class App extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
             waitingForOpponent: true,
-            tilesFlipped: [],
-            tilesUnflipped: [],
-            tilesCurrWord: [],
+            lettersFlipped: [],
+            lettersUnflipped: [],
+            lettersCurrWord: [],
             yourWords: [],
             opponentWords: []
         };
@@ -42,7 +35,7 @@ class App extends Component {
 
     initSocket() {
         var app = this; 
-        this.socket = io();
+        this.socket = io('/game');
 
         this.socket.on('playerId', function(playerId){
             app.playerId = playerId;
@@ -52,25 +45,25 @@ class App extends Component {
             app.setState({
                 waitingForOpponent: false
             });
-            app.socket.emit('sendTiles', {
+            app.socket.emit('sendLetters', {
                 socketId: socketId,
-                tilesFlipped: app.state.tilesFlipped,
-                tilesUnflipped: app.state.tilesUnflipped
+                lettersFlipped: app.state.lettersFlipped,
+                lettersUnflipped: app.state.lettersUnflipped
             });
         });
 
-        this.socket.on('receiveTiles', function({tilesFlipped: tilesFlipped, tilesUnflipped: tilesUnflipped}){
+        this.socket.on('receiveLetters', function({lettersFlipped: lettersFlipped, lettersUnflipped: lettersUnflipped}){
             app.setState({
-                tilesFlipped: tilesFlipped,
-                tilesUnflipped: tilesUnflipped,
+                lettersFlipped: lettersFlipped,
+                lettersUnflipped: lettersUnflipped,
                 waitingForOpponent: false
         });
     });
 
         this.socket.on('firstPlayer', function(){
             app.setState({
-                tilesUnflipped: Utils.getShuffledTiles(),
-                tilesFlipped: []
+                lettersUnflipped: Utils.getShuffledLetters(),
+                lettersFlipped: []
             });
         });
 
@@ -80,12 +73,12 @@ class App extends Component {
 
             app.setState({
                 opponentWords: newWords,
-                tilesFlipped: newGameState.tilesFlipped,
-                tilesUnflipped: newGameState.tilesUnflipped
+                lettersFlipped: newGameState.lettersFlipped,
+                lettersUnflipped: newGameState.lettersUnflipped
             });
         });
-        this.socket.on('tileFlip', function() {
-            app.flipTile();
+        this.socket.on('letterFlip', function() {
+            app.flipLetter();
         });
     }
 
@@ -95,113 +88,112 @@ class App extends Component {
         }
         if (event.keyCode === 32) {
             // Spacebar
-            if (this.state.tilesUnflipped.length > 0) {
-                this.flipTile();
-                this.socket.emit("tileFlip");
+            if (this.state.lettersUnflipped.length > 0) {
+                this.flipLetter();
+                this.socket.emit("letterFlip");
             } else {
-                alert("No more tiles!");
+                alert("No more letters!");
             }
         } else if (event.keyCode === 13) {
             // Enter
-            if (Utils.isValid(Utils.asWord(this.state.tilesCurrWord))) {
+            if (Utils.isValid(this.state.lettersCurrWord.join(""))) {
                 this.onWordSubmitted();
             } 
         } else if (event.keyCode === 8) {
             // Delete
-            if (this.state.tilesCurrWord.length > 0) {
-                var tile = this.state.tilesCurrWord[this.state.tilesCurrWord.length - 1];
-                this.onCurrTileClicked(tile.letter, tile.idx);
+            if (this.state.lettersCurrWord.length > 0) {
+                var letter = this.state.lettersCurrWord[this.state.lettersCurrWord.length - 1];
+                this.onCurrLetterClicked(letter);
             }
         } else if (event.keyCode >= 65 && event.keyCode <= 90) {
             // A through Z
-            var tile = this.getTileWithLetter(Utils.keyCodes[event.keyCode].toUpperCase());
-            if (tile) {
-                this.onTileClicked(tile.letter, tile.idx);
+            var letter = this.getLetter(Utils.keyCodes[event.keyCode].toUpperCase());
+            if (letter) {
+                this.onLetterClicked(letter);
             }
         }
     }
 
-    getTileWithLetter(letter) {
-        for (var i = 0; i < this.state.tilesFlipped.length; i++) {
-            if (this.state.tilesFlipped[i].letter === letter) {
-                return this.state.tilesFlipped[i]
+    getLetter(letter) {
+        for (var i = 0; i < this.state.lettersFlipped.length; i++) {
+            if (this.state.lettersFlipped[i] === letter) {
+                return this.state.lettersFlipped[i]
             }
         }
         return null;
     }
 
-    onTileClicked(letter, idx) {
-        var tile = new Tile(letter, idx);
-        var newTilesCurrWord = this.state.tilesCurrWord.slice();
-        var newTilesFlipped = this.state.tilesFlipped.slice();
+    onLetterClicked(letter) {
+        var newLettersCurrWord = this.state.lettersCurrWord.slice();
+        var newLettersFlipped = this.state.lettersFlipped.slice();
         var idx;
 
-        for (var i = 0; i < newTilesFlipped.length; i++) {
-            if (newTilesFlipped[i].letter === letter && newTilesFlipped[i].idx === idx) {
+        for (var i = 0; i < newLettersFlipped.length; i++) {
+            if (newLettersFlipped[i] === letter) {
                 idx = i;
                 break;
             }
         } 
         
-        newTilesCurrWord.push(tile);
-        newTilesFlipped.splice(idx, 1);
+        newLettersCurrWord.push(letter);
+        newLettersFlipped.splice(idx, 1);
 
         this.setState({
-            tilesCurrWord: newTilesCurrWord,
-            tilesFlipped: newTilesFlipped
+            lettersCurrWord: newLettersCurrWord,
+            lettersFlipped: newLettersFlipped
         });
     }
 
-    onCurrTileClicked(letter, idx) {
-        var tile = new Tile(letter, idx);
-        var newTilesCurrWord = this.state.tilesCurrWord.slice();
-        var newTilesFlipped = this.state.tilesFlipped.slice();
+    onCurrLetterClicked(letter) {
+        var newLettersCurrWord = this.state.lettersCurrWord.slice();
+        var newLettersFlipped = this.state.lettersFlipped.slice();
         var idx;
 
-        for (var i = 0; i < newTilesCurrWord.length; i++) {
-            if (newTilesCurrWord[i].letter === letter && newTilesCurrWord[i].idx === idx) {
+        for (var i = 0; i < newLettersCurrWord.length; i++) {
+            if (newLettersCurrWord[i] === letter) {
                 idx = i;
                 break;
             }
         } 
         
-        newTilesCurrWord.splice(idx, 1);
-        newTilesFlipped.push(tile);
+        newLettersCurrWord.splice(idx, 1);
+        newLettersFlipped.push(letter);
 
         this.setState({
-            tilesCurrWord: newTilesCurrWord,
-            tilesFlipped: newTilesFlipped
+            lettersCurrWord: newLettersCurrWord,
+            lettersFlipped: newLettersFlipped
         });
     }
+
 
     onWordSubmitted() {
-        var word = Utils.asWord(this.state.tilesCurrWord);
+        var word = this.state.lettersCurrWord.join("");
         var newYourWords = this.state.yourWords.slice();
         newYourWords.push(word);
 
         this.socket.emit('word', {word: word, 
-            tilesFlipped: this.state.tilesFlipped,
-            tilesUnflipped: this.state.tilesUnflipped
+            lettersFlipped: this.state.lettersFlipped,
+            lettersUnflipped: this.state.lettersUnflipped
         });
 
         this.setState({
-            tilesCurrWord: [],
+            lettersCurrWord: [],
             yourWords: newYourWords
         });
     }
 
-    flipTile() {
-        var newTilesFlipped = this.state.tilesFlipped.slice();
-        var newTilesUnflipped = this.state.tilesUnflipped.slice();
-        var newTile = newTilesUnflipped.pop();
-        for (var i = 0; i < this.state.tilesCurrWord.length; i++) {
-            newTilesFlipped.push(this.state.tilesCurrWord[i]);
+    flipLetter() {
+        var newLettersFlipped = this.state.lettersFlipped.slice();
+        var newLettersUnflipped = this.state.lettersUnflipped.slice();
+        var newLetter = newLettersUnflipped.pop();
+        for (var i = 0; i < this.state.lettersCurrWord.length; i++) {
+            newLettersFlipped.push(this.state.lettersCurrWord[i]);
         }
-        newTilesFlipped.push(newTile);
+        newLettersFlipped.push(newLetter);
         this.setState({
-            tilesFlipped: newTilesFlipped,
-            tilesUnflipped: newTilesUnflipped,
-            tilesCurrWord: []
+            lettersFlipped: newLettersFlipped,
+            lettersUnflipped: newLettersUnflipped,
+            lettersCurrWord: []
         });
     }
 
@@ -209,21 +201,18 @@ class App extends Component {
         if (this.state.waitingForOpponent) {
             return (<WaitingPage gameId={this.props.gameId}/>);
         }
-        else return (
+        else { 
+            return (
             <div className="App">
-                <div className="TilesSection">
-                    <Board tiles={this.state.tilesFlipped} onTileClicked={this.onTileClicked.bind(this)} />
-                </div>
-                <WordBuilder tiles={this.state.tilesCurrWord} 
-                            onCurrTileClicked={this.onCurrTileClicked.bind(this)} 
-                            onWordSubmitted={this.onWordSubmitted.bind(this)} />
+                <Board letters={this.state.lettersFlipped} onLetterClicked={this.onLetterClicked.bind(this)}/>
+                <WordBuilder letters={this.state.lettersCurrWord}/>
                 <div className="AllWords">
                     <Words words={this.state.yourWords} className="YourWords" />
                     <Words words={this.state.opponentWords} className="OpponentWords" />
                 </div>
             </div>
         );
-    }
+    }}
 }
 
 export default App;

@@ -20,5 +20,18 @@
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "predeploy": "npm run build"
-  }
+  },
+  "proxy": {
+    "/": {
+      "target": "http://localhost:3001"
+    },
+    "/sockjs-node": {
+      "target": "ws://localhost:3001",
+      "ws": true
+    },
+    "/socket.io": {
+      "target": "ws://localhost:3001",
+      "ws": true
+    }
+   }
 }
