@@ -1,10 +1,10 @@
 import React from 'react';
 
-const Letter = (props) => (
-                    <div className="Letter" onClick={props.onLetterClicked}>
-                        <div className="LetterText">
-                            {props.letter}
-                        </div>
-                    </div>);
+const Letter = ({ letter, onLetterClicked }) => 
+    <div className="Letter" onClick={onLetterClicked}>
+        <div className="LetterText">
+            {letter}
+        </div>
+    </div>  
 
 export default Letter;

@@ -2,11 +2,11 @@ import React from 'react';
 import Letter from './Letter';
 import Utils from '../utils';
 
-const WordBuilder = (props) => {
-                const isValid = Utils.isValid(props.letters.join(""));
+const WordBuilder = ({ letters }) => {
+                const isValid = Utils.isValid(letters.join(""));
                 return (
                     <div className={"WordBuilder" +  (isValid ? "" : " invalid")}>
-                        {props.letters.map((letter, idx) => (
+                        {letters.map((letter, idx) => (
                             <Letter letter={letter} 
                             key={idx}/>
                         ))}

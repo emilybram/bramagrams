@@ -1,10 +1,10 @@
 import React from 'react';
 import Letter from './Letter';
 
-const Board = (props) => {
+const Board = ({ letters }) => {
                 return (
                     <div className="Board">
-                        {props.letters.map((letter, idx) => (
+                        {letters.map((letter, idx) => (
                             <Letter letter={letter} 
                             key={idx} />
                         ))}
