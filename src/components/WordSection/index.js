@@ -8,8 +8,9 @@ const Word = ({ word }) =>
         })}
     </div>
 
-const WordSection = ({ words, className }) => 
+const WordSection = ({ words, className, title }) => 
     <div className={"WordSection " + className}>
+        <h2>{title}</h2>
         {words.map((word, idx) => {
             return (<Word word={word} key={idx} />);
         })}

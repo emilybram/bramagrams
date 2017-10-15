@@ -60,6 +60,14 @@ class Utils {
         'Z': 2
     }
 
+    // static letterFreqs = {
+    //     'A': 4,
+    //     'B': 3,
+    //     'C': 3,
+    //     'D': 6,
+    //     'E': 5,
+    // }
+
 
 static shuffle(arr) {
     var i = 0, j = 0, temp = null;

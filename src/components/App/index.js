@@ -4,8 +4,8 @@ import SendURL from '../SendURL';
 import WordBuilder from '../WordBuilder';
 import WordSection from '../WordSection';
 import Utils from '../../utils';
+import Socket from '../../socket';
 import './index.css';
-import io from 'socket.io-client';
 
 class App extends Component {
     constructor(props) {
@@ -20,7 +20,7 @@ class App extends Component {
             opponentWords: []
         };
 
-        this.initSocket();
+        this.socket = Socket.setup(this);
         this.socket.emit('gameRoom', {gameRoom: this.props.gameId});
     }
 
@@ -31,55 +31,6 @@ class App extends Component {
 
     componentWillUnmount() {
         document.removeEventListener("keyup", this.handleKeyDown.bind(this));
-    }
-
-    initSocket() {
-        var app = this; 
-        this.socket = io('/game');
-
-        this.socket.on('playerId', function(playerId){
-            app.playerId = playerId;
-        });
-
-        this.socket.on('secondPlayerJoin', function({socketId: socketId}){
-            app.setState({
-                waitingForOpponent: false
-            });
-            app.socket.emit('sendLetters', {
-                socketId: socketId,
-                lettersFlipped: app.state.lettersFlipped,
-                lettersUnflipped: app.state.lettersUnflipped
-            });
-        });
-
-        this.socket.on('receiveLetters', function({lettersFlipped: lettersFlipped, lettersUnflipped: lettersUnflipped}){
-            app.setState({
-                lettersFlipped: lettersFlipped,
-                lettersUnflipped: lettersUnflipped,
-                waitingForOpponent: false
-        });
-    });
-
-        this.socket.on('firstPlayer', function(){
-            app.setState({
-                lettersUnflipped: Utils.getShuffledLetters(),
-                lettersFlipped: []
-            });
-        });
-
-        this.socket.on('word', function(newGameState) {
-            var newWords = app.state.opponentWords.slice();
-            newWords.push(newGameState.word);
-
-            app.setState({
-                opponentWords: newWords,
-                lettersFlipped: newGameState.lettersFlipped,
-                lettersUnflipped: newGameState.lettersUnflipped
-            });
-        });
-        this.socket.on('letterFlip', function() {
-            app.flipLetter();
-        });
     }
 
     handleKeyDown(event) {
@@ -207,8 +158,8 @@ class App extends Component {
                 <Board letters={this.state.lettersFlipped} onLetterClicked={this.onLetterClicked.bind(this)}/>
                 <WordBuilder letters={this.state.lettersCurrWord}/>
                 <div className="AllWords">
-                    <WordSection words={this.state.yourWords} className="YourWords" />
-                    <WordSection words={this.state.opponentWords} className="OpponentWords" />
+                    <WordSection words={this.state.yourWords} className="YourWords" title="Your Words" />
+                    <WordSection words={this.state.opponentWords} className="OpponentWords" title="Opponent's Words" />
                 </div>
             </div>
         );

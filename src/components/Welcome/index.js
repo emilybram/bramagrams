@@ -12,11 +12,6 @@ const Welcome = () =>
             </button>
         </Link>
         <br/>
-        <a href='https://github.com/emilybram/bramagrams'>
-            <button>
-                Source Code
-            </button>
-        </a>
     </div>
 
 export default Welcome;

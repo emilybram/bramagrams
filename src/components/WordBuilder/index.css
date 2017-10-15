@@ -1,0 +1,25 @@
+.WordBuilder {
+    height: 80px;
+}
+
+.WordBuilder > .Letter {
+    height: 60px;
+    width: 60px;
+    font-size: 20px;  
+}
+  
+.WordBuilder > .Letter > .LetterText {
+    position: relative;
+    font-size: 30px;
+    top: 17%;
+    transform: translateY(10%);
+}
+  
+.WordBuilder.invalid > .Letter {
+    background: linear-gradient(0deg, #dadada, #cdcdcd);
+}
+
+.WordBuilder.invalid > .Letter > .LetterText {
+    color: gray;
+}
+  
