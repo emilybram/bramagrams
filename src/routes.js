@@ -3,7 +3,7 @@ import { Route, Redirect } from 'react-router';
 import { BrowserRouter, withRouter } from 'react-router-dom';
 
 import App from './components/App';
-import MainPage from './components/MainPage';
+import Welcome from './components/Welcome';
 
 const newGameId = () => {
   return Math.random().toString(36).slice(2, 8);
@@ -12,7 +12,7 @@ const newGameId = () => {
 const Routes = (props) => (
   <BrowserRouter {...props}>
      <div>
-        <Route exact path="/" component={MainPage} />
+        <Route exact path="/" component={Welcome} />
         <Route exact path="/new" render={() => (<Redirect to={'/game/' + newGameId()}/>)}/>
         <Route path="/game/:gameId" component={GameApp} />
     </div>
