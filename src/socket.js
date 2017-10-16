@@ -63,6 +63,9 @@ class Socket {
 
         socket.on('letterFlip', function() {
             app.flipLetter();
+            app.setState({
+                yourTurn: true
+            });
         });
 
         socket.on('endGame', function() {

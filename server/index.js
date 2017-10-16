@@ -28,13 +28,13 @@ io.of('/game').on('connection', function(socket){
         }
     });
 
-    socket.on('sendLetters', function({socketId: socketId,
-        lettersFlipped: lettersFlipped,
-        lettersUnflipped: lettersUnflipped}){
+    socket.on('sendLetters', function({socketId,
+        lettersFlipped,
+        lettersUnflipped}){
         console.log("Sending player " + socketId + " letters");
         socket.to(socketId).emit('receiveLetters', {
-            lettersFlipped: lettersFlipped,
-            lettersUnflipped: lettersUnflipped
+            lettersFlipped,
+            lettersUnflipped
         });
     });
 

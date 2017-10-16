@@ -3,11 +3,10 @@ import Board from '../Board';
 import SendURL from '../SendURL';
 import WordBuilder from '../WordBuilder';
 import WordSection from '../WordSection';
-import GameOver from '../GameOver';
+import InfoBox from '../InfoBox';
 import Utils from '../../utils';
 import Socket from '../../socket';
 import './index.css';
-
 
 class App extends Component {
     constructor(props) {
@@ -15,6 +14,7 @@ class App extends Component {
 
         this.state = {
             waitingForOpponent: true,
+            yourTurn: true,
             userEndGame: false,
             opponentEndGame: false,
             lettersFlipped: [],
@@ -43,7 +43,10 @@ class App extends Component {
             return; 
         } else if (event.keyCode === 32) {
             // Spacebar
-            if (this.state.lettersUnflipped.length > 0) {
+            if (this.state.lettersUnflipped.length > 0 && this.state.yourTurn) {
+                this.setState({
+                    yourTurn: false
+                });
                 this.flipLetter();
                 this.socket.emit("letterFlip");
             }
@@ -100,20 +103,22 @@ class App extends Component {
 
     onWordSubmitted() {
         const word = this.state.lettersCurrWord.join("");
-        this.socket.emit('word', word);
-
-        this.setState({
-            lettersCurrWord: [],
-            yourWords: [...this.state.yourWords, word]
+        this.setState((prevState) => {
+            return {
+                lettersCurrWord: [],
+                yourWords: [...prevState.yourWords, word]
+            }
         });
+        this.socket.emit('word', word);
     }
 
     flipLetter() {
-        const [flippedLetter, ...lettersUnflipped] = this.state.lettersUnflipped;
-        this.setState({
-            lettersFlipped: [...this.state.lettersFlipped, ...this.state.lettersCurrWord, flippedLetter],
-            lettersUnflipped,
-            lettersCurrWord: []
+        this.setState((prevState) => {
+            const [flippedLetter, ...lettersUnflipped] = prevState.lettersUnflipped;
+            return {
+                lettersFlipped: [...prevState.lettersFlipped, flippedLetter],
+                lettersUnflipped
+            }
         });
     }
 
@@ -132,15 +137,14 @@ class App extends Component {
             <div className="App">
                 <Board letters={this.state.lettersFlipped}/>
                 <WordBuilder letters={this.state.lettersCurrWord}/>
-                {
-                    this.state.lettersUnflipped.length > 0
-                    ? ''
-                    : <GameOver 
+                    <InfoBox 
                         userEndGame={this.state.userEndGame}
                         opponentEndGame={this.state.opponentEndGame}
                         yourCount={this.state.yourWords.length} 
-                        opponentCount={this.state.opponentWords.length}/>
-                }
+                        opponentCount={this.state.opponentWords.length}
+                        gameOver={this.state.lettersUnflipped.length === 0}
+                        yourTurn={this.state.yourTurn}
+                        />
                 <div className="AllWords">
                     <WordSection words={this.state.yourWords} className="YourWords" title="Your Words" />
                     <WordSection words={this.state.opponentWords} className="OpponentWords" title="Opponent's Words" />
