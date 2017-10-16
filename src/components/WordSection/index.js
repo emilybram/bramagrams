@@ -1,5 +1,6 @@
 import React from 'react';
 import Letter from '../Letter';
+import './index.css';
 
 const Word = ({ word }) => 
     <div className="Word">

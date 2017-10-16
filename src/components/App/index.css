@@ -8,20 +8,6 @@
     height: 500px;
 }
   
-.Letter {
-    min-width: 30px;
-    min-height: 30px;
-    margin-right: 3px;
-    margin-bottom: 3px;
-    display: inline-block;
-    text-align: center;
-    border-width: 2px;
-    border-color: black;
-    border-radius: 10%;
-    color: black;
-    font-weight: bold;
-    background: linear-gradient(0deg, #f0e8d7, #e9ddc5);}
-  
 .Board {
     overflow: hidden;
     height: 100px;
@@ -31,15 +17,6 @@
     margin-top: 15px;
     margin-right: 30px;
     display: inline-block;
-}
-  
-.LetterText {
-    position: relative;
-    font-size: 20px;
-    top: 50%;
-    transform: translate(0%, 22%);
-    font-family: sans-serif;
-    font-weight: normal;
 }
   
 .YourWords {
@@ -67,8 +44,4 @@
   padding-left: 30px;
   padding-right: 30px;
   background: #27870a
-}
-
-.WordSection h2 {
-  font-family: 'Coolvetica';
 }
