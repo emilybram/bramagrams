@@ -38,10 +38,10 @@ class App extends Component {
     }
 
     handleKeyDown(event) {
-        if (this.state.waitingForOpponent) {
-            return;
-        }
-        if (event.keyCode === 32) {
+        if (this.state.waitingForOpponent) { 
+            // Game not started
+            return; 
+        } else if (event.keyCode === 32) {
             // Spacebar
             if (this.state.lettersUnflipped.length > 0) {
                 this.flipLetter();
@@ -59,7 +59,7 @@ class App extends Component {
             }
         } else if (event.keyCode === 49) {
             // 1
-            if (this.state.lettersUnflipped.length == 0) {
+            if (this.state.lettersUnflipped.length == 0 && !this.state.userEndGame) {
                 this.setState({
                     userEndGame: true
                 });
@@ -67,20 +67,11 @@ class App extends Component {
             }
         } else if (event.keyCode >= 65 && event.keyCode <= 90) {
             // A through Z
-            var letter = this.getLetter(Utils.keyCodes[event.keyCode].toUpperCase());
-            if (letter && !this.state.userEndGame) {
+            const letter = Utils.keyCodes[event.keyCode].toUpperCase();
+            if (this.state.lettersFlipped.includes(letter) && !this.state.userEndGame) {
                 this.onLetterTyped(letter);
             }
         }
-    }
-
-    getLetter(letter) {
-        for (var i = 0; i < this.state.lettersFlipped.length; i++) {
-            if (this.state.lettersFlipped[i] === letter) {
-                return this.state.lettersFlipped[i]
-            }
-        }
-        return null;
     }
 
     onLetterTyped(letter) {
@@ -107,9 +98,8 @@ class App extends Component {
         });
     }
 
-
     onWordSubmitted() {
-        var word = this.state.lettersCurrWord.join("");
+        const word = this.state.lettersCurrWord.join("");
         this.socket.emit('word', word);
 
         this.setState({

@@ -10,7 +10,7 @@ server.listen(PORT, function() {
   console.log(`App listening on port ${PORT}`);
 });
 
-var games = {};
+const games = {};
 
 io.of('/game').on('connection', function(socket){
     console.log("socket connected");

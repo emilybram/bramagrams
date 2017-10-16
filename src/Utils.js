@@ -1,4 +1,4 @@
-var words = require('./data/dictionary.json');
+const words = require('./data/dictionary.json');
 
 class Utils {
     
@@ -60,31 +60,31 @@ class Utils {
         'Z': 2
     }
 
-static shuffle(arr) {
-    var i = 0, j = 0, temp = null;
+    static shuffle(arr) {
+        let i = 0, j = 0, temp = null;
 
-    for (i = arr.length - 1; i > 0; i -= 1) {
-        j = Math.floor(Math.random() * (i + 1));
-        temp = arr[i];
-        arr[i] = arr[j];
-        arr[j] = temp;
-    }
-}
-
-static getShuffledLetters() {
-    var letters = [];
-        for (var letter in Utils.letterFreqs) {
-        for (var i = 0; i < Utils.letterFreqs[letter]; i++) {
-            letters.push(letter);
+        for (i = arr.length - 1; i > 0; i -= 1) {
+            j = Math.floor(Math.random() * (i + 1));
+            temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
         }
     }
-    Utils.shuffle(letters);
-    return letters;
-}
+
+    static getShuffledLetters() {
+        let letters = [];
+        for (let letter in Utils.letterFreqs) {
+            for (let i = 0; i < Utils.letterFreqs[letter]; i++) {
+                letters.push(letter);
+            }
+        }
+        Utils.shuffle(letters);
+        return letters;
+    }
 
     static createDictionary() {
-        var hash = {};
-        for (var i = 0; i < words.length; i++) {
+        let hash = {};
+        for (let i = 0; i < words.length; i++) {
             if (words[i].length < 3) {
                 continue;
             } else if (hash[words[i][0]]) {
@@ -93,19 +93,19 @@ static getShuffledLetters() {
                 hash[words[i][0]] = [words[i]];
             }
         }
-        return hash;
+    return hash;
     }
 
     static dictionary = Utils.createDictionary();
 
     static isValid(word) {
         if (word.length > 0) {
-            var key = word[0].toLowerCase();
+            const key = word[0].toLowerCase();
             return Utils.dictionary[key].indexOf(word.toLowerCase()) > -1;
         } else {
             return false;
         }
-    }
+    }  
 }
 
 export default Utils;

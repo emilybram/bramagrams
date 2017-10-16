@@ -39,9 +39,9 @@ class Socket {
         socket.on('word', function(word) {
             let lettersCurrWord = app.state.lettersCurrWord.slice();
             let lettersFlipped = app.state.lettersFlipped.slice();
-            var letter;
+            let letter;
 
-            for (var i = 0; i < word.length; i++) {
+            for (let i = 0; i < word.length; i++) {
                 letter = word.charAt(i);
                 let idx = lettersFlipped.indexOf(letter);
                 if (idx > -1) {

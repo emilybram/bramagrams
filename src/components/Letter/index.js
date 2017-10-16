@@ -3,7 +3,9 @@ import './index.css';
 
 const Letter = ({ letter, onLetterClicked }) => 
     <div className="Letter" onClick={onLetterClicked}>
-        {letter}
+        <div className="LetterText">
+            {letter}
+        </div>
     </div>  
 
 export default Letter;
