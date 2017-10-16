@@ -4,11 +4,7 @@ const app = require('./app');
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
-// Prod
 const PORT = process.env.PORT || 9000;
-
-// Dev
-//const PORT = 3001;
 
 server.listen(PORT, function() {
   console.log(`App listening on port ${PORT}`);
@@ -52,6 +48,11 @@ io.of('/game').on('connection', function(socket){
     socket.on('letterFlip', function(){
         console.log("Player " + socket.id + " flipped letter");
         socket.broadcast.to(socket.gameRoom).emit('letterFlip');
+    });
+
+    socket.on('endGame', function(){
+        console.log("Player " + socket.id + " ended game");
+        socket.broadcast.to(socket.gameRoom).emit('endGame');
     });
 
     socket.on('disconnect', function () {

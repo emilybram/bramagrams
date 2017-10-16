@@ -3,6 +3,7 @@ import Board from '../Board';
 import SendURL from '../SendURL';
 import WordBuilder from '../WordBuilder';
 import WordSection from '../WordSection';
+import GameOver from '../GameOver';
 import Utils from '../../utils';
 import Socket from '../../socket';
 import './index.css';
@@ -13,6 +14,8 @@ class App extends Component {
 
         this.state = {
             waitingForOpponent: true,
+            userEndGame: false,
+            opponentEndGame: false,
             lettersFlipped: [],
             lettersUnflipped: [],
             lettersCurrWord: [],
@@ -21,16 +24,16 @@ class App extends Component {
         };
 
         this.socket = Socket.setup(this);
+        // Tell server to add you to game room
         this.socket.emit('gameRoom', {gameRoom: this.props.gameId});
     }
 
     componentWillMount() {
-        document.addEventListener("keyup", this.handleKeyDown.bind(this));
+        document.addEventListener("keydown", this.handleKeyDown.bind(this));
     }
 
-
     componentWillUnmount() {
-        document.removeEventListener("keyup", this.handleKeyDown.bind(this));
+        document.removeEventListener("keydown", this.handleKeyDown.bind(this));
     }
 
     handleKeyDown(event) {
@@ -42,8 +45,6 @@ class App extends Component {
             if (this.state.lettersUnflipped.length > 0) {
                 this.flipLetter();
                 this.socket.emit("letterFlip");
-            } else {
-                alert("No more letters!");
             }
         } else if (event.keyCode === 13) {
             // Enter
@@ -53,14 +54,21 @@ class App extends Component {
         } else if (event.keyCode === 8) {
             // Delete
             if (this.state.lettersCurrWord.length > 0) {
-                var letter = this.state.lettersCurrWord[this.state.lettersCurrWord.length - 1];
-                this.onCurrLetterClicked(letter);
+                this.onDelete();
+            }
+        } else if (event.keyCode === 49) {
+            // 1
+            if (this.state.lettersUnflipped.length == 0) {
+                this.setState({
+                    userEndGame: true
+                });
+                this.socket.emit("endGame");
             }
         } else if (event.keyCode >= 65 && event.keyCode <= 90) {
             // A through Z
             var letter = this.getLetter(Utils.keyCodes[event.keyCode].toUpperCase());
-            if (letter) {
-                this.onLetterClicked(letter);
+            if (letter && !this.state.userEndGame) {
+                this.onLetterTyped(letter);
             }
         }
     }
@@ -74,77 +82,57 @@ class App extends Component {
         return null;
     }
 
-    onLetterClicked(letter) {
-        var newLettersCurrWord = this.state.lettersCurrWord.slice();
-        var newLettersFlipped = this.state.lettersFlipped.slice();
-        var idx;
-
-        for (var i = 0; i < newLettersFlipped.length; i++) {
-            if (newLettersFlipped[i] === letter) {
-                idx = i;
-                break;
-            }
-        } 
-        
-        newLettersCurrWord.push(letter);
-        newLettersFlipped.splice(idx, 1);
-
-        this.setState({
-            lettersCurrWord: newLettersCurrWord,
-            lettersFlipped: newLettersFlipped
+    onLetterTyped(letter) {
+        this.setState((prevState) => {
+            const idx = prevState.lettersFlipped.indexOf(letter);
+            const lettersFlipped = prevState.lettersFlipped.filter((item, i) => i !== idx);
+            
+            return {
+                lettersCurrWord: [...prevState.lettersCurrWord, letter],
+                lettersFlipped
+            };
         });
     }
 
-    onCurrLetterClicked(letter) {
-        var newLettersCurrWord = this.state.lettersCurrWord.slice();
-        var newLettersFlipped = this.state.lettersFlipped.slice();
-        var idx;
+    onDelete() {
+        this.setState((prevState) => {
+            let lettersCurrWord = prevState.lettersCurrWord.slice(0);
+            const letter = lettersCurrWord.pop();
 
-        for (var i = 0; i < newLettersCurrWord.length; i++) {
-            if (newLettersCurrWord[i] === letter) {
-                idx = i;
-                break;
-            }
-        } 
-        
-        newLettersCurrWord.splice(idx, 1);
-        newLettersFlipped.push(letter);
-
-        this.setState({
-            lettersCurrWord: newLettersCurrWord,
-            lettersFlipped: newLettersFlipped
+            return {
+                lettersCurrWord,
+                lettersFlipped: [...prevState.lettersFlipped, letter]
+            };
         });
     }
 
 
     onWordSubmitted() {
         var word = this.state.lettersCurrWord.join("");
-        var newYourWords = this.state.yourWords.slice();
-        newYourWords.push(word);
 
-        this.socket.emit('word', {word: word, 
+        this.socket.emit('word', {word, 
             lettersFlipped: this.state.lettersFlipped,
             lettersUnflipped: this.state.lettersUnflipped
         });
 
         this.setState({
             lettersCurrWord: [],
-            yourWords: newYourWords
+            yourWords: [...this.state.yourWords, word]
         });
     }
 
     flipLetter() {
-        var newLettersFlipped = this.state.lettersFlipped.slice();
-        var newLettersUnflipped = this.state.lettersUnflipped.slice();
-        var newLetter = newLettersUnflipped.pop();
-        for (var i = 0; i < this.state.lettersCurrWord.length; i++) {
-            newLettersFlipped.push(this.state.lettersCurrWord[i]);
-        }
-        newLettersFlipped.push(newLetter);
+        const [flippedLetter, ...lettersUnflipped] = this.state.lettersUnflipped;
         this.setState({
-            lettersFlipped: newLettersFlipped,
-            lettersUnflipped: newLettersUnflipped,
+            lettersFlipped: [...this.state.lettersFlipped, ...this.state.lettersCurrWord, flippedLetter],
+            lettersUnflipped,
             lettersCurrWord: []
+        });
+    }
+
+    onOpponentEndGame() {
+        this.setState({
+            opponentEndGame: true
         });
     }
 
@@ -155,8 +143,17 @@ class App extends Component {
         else { 
             return (
             <div className="App">
-                <Board letters={this.state.lettersFlipped} onLetterClicked={this.onLetterClicked.bind(this)}/>
+                <Board letters={this.state.lettersFlipped}/>
                 <WordBuilder letters={this.state.lettersCurrWord}/>
+                {
+                    this.state.lettersUnflipped.length > 0
+                    ? ''
+                    : <GameOver 
+                        userEndGame={this.state.userEndGame}
+                        opponentEndGame={this.state.opponentEndGame}
+                        yourCount={this.state.yourWords.length} 
+                        opponentCount={this.state.opponentWords.length}/>
+                }
                 <div className="AllWords">
                     <WordSection words={this.state.yourWords} className="YourWords" title="Your Words" />
                     <WordSection words={this.state.opponentWords} className="OpponentWords" title="Opponent's Words" />

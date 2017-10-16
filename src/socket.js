@@ -10,21 +10,21 @@ class Socket {
             app.playerId = playerId;
         });
 
-        socket.on('secondPlayerJoin', function({socketId: socketId}){
+        socket.on('secondPlayerJoin', function({socketId}){
             app.setState({
                 waitingForOpponent: false
             });
             app.socket.emit('sendLetters', {
-                socketId: socketId,
+                socketId,
                 lettersFlipped: app.state.lettersFlipped,
                 lettersUnflipped: app.state.lettersUnflipped
             });
         });
 
-        socket.on('receiveLetters', function({lettersFlipped: lettersFlipped, lettersUnflipped: lettersUnflipped}){
+        socket.on('receiveLetters', function({lettersFlipped, lettersUnflipped}){
             app.setState({
-                lettersFlipped: lettersFlipped,
-                lettersUnflipped: lettersUnflipped,
+                lettersFlipped,
+                lettersUnflipped,
                 waitingForOpponent: false
             });
         });
@@ -37,11 +37,8 @@ class Socket {
         });
 
         socket.on('word', function(newGameState) {
-            var newWords = app.state.opponentWords.slice();
-            newWords.push(newGameState.word);
-
             app.setState({
-                opponentWords: newWords,
+                opponentWords: [...app.state.opponentWords, newGameState.word],
                 lettersFlipped: newGameState.lettersFlipped,
                 lettersUnflipped: newGameState.lettersUnflipped
             });
@@ -49,6 +46,10 @@ class Socket {
 
         socket.on('letterFlip', function() {
             app.flipLetter();
+        });
+
+        socket.on('endGame', function() {
+            app.onOpponentEndGame();
         });
 
         return socket;
