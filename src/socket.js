@@ -25,15 +25,15 @@ class Socket {
             app.setState({
                 lettersFlipped,
                 lettersUnflipped,
-                waitingForOpponent: false,
-                yourTurn: false
+                waitingForOpponent: false
             });
         });
 
         socket.on('firstPlayer', function(){
             app.setState({
                 lettersUnflipped: Utils.getShuffledLetters(),
-                lettersFlipped: []
+                lettersFlipped: [],
+                yourTurn: true
             });
         });
 

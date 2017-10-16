@@ -14,7 +14,7 @@ class App extends Component {
 
         this.state = {
             waitingForOpponent: true,
-            yourTurn: true,
+            yourTurn: false,
             userEndGame: false,
             opponentEndGame: false,
             lettersFlipped: [],
