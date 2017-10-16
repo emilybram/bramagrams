@@ -25,7 +25,8 @@ class Socket {
             app.setState({
                 lettersFlipped,
                 lettersUnflipped,
-                waitingForOpponent: false
+                waitingForOpponent: false,
+                yourTurn: false
             });
         });
 
