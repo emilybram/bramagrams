@@ -109,11 +109,7 @@ class App extends Component {
 
     onWordSubmitted() {
         var word = this.state.lettersCurrWord.join("");
-
-        this.socket.emit('word', {word, 
-            lettersFlipped: this.state.lettersFlipped,
-            lettersUnflipped: this.state.lettersUnflipped
-        });
+        this.socket.emit('word', word);
 
         this.setState({
             lettersCurrWord: [],

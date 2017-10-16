@@ -38,11 +38,9 @@ io.of('/game').on('connection', function(socket){
         });
     });
 
-    socket.on('word', function({word: word, lettersFlipped: lettersFlipped, lettersUnflipped: lettersUnflipped}){
+    socket.on('word', function(word){
         console.log("Player " + socket.id + " submitted " + word);
-        socket.to(socket.gameRoom).emit('word', {word: word, 
-            lettersFlipped: lettersFlipped,
-            lettersUnflipped: lettersUnflipped});
+        socket.to(socket.gameRoom).emit('word', word);
     });
 
     socket.on('letterFlip', function(){

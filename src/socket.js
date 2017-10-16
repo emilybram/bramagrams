@@ -36,11 +36,28 @@ class Socket {
             });
         });
 
-        socket.on('word', function(newGameState) {
+        socket.on('word', function(word) {
+            let lettersCurrWord = app.state.lettersCurrWord.slice();
+            let lettersFlipped = app.state.lettersFlipped.slice();
+            var letter;
+
+            for (var i = 0; i < word.length; i++) {
+                letter = word.charAt(i);
+                let idx = lettersFlipped.indexOf(letter);
+                if (idx > -1) {
+                    lettersFlipped.splice(idx, 1);
+                } else {
+                    lettersFlipped = [...lettersFlipped, ...lettersCurrWord];
+                    lettersCurrWord = [];
+                    idx = lettersFlipped.indexOf(letter);
+                    lettersFlipped.splice(idx, 1);
+                }
+            }
+            
             app.setState({
-                opponentWords: [...app.state.opponentWords, newGameState.word],
-                lettersFlipped: newGameState.lettersFlipped,
-                lettersUnflipped: newGameState.lettersUnflipped
+                opponentWords: [...app.state.opponentWords, word],
+                lettersFlipped,
+                lettersCurrWord
             });
         });
 
