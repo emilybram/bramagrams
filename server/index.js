@@ -27,7 +27,7 @@ io.of('/game').on('connection', function(socket){
             socket.emit('firstPlayer');
         } else {
             games[gameId].push(socket.id);
-            socket.to(games[gameId][0]).emit(Events.JOINED_GAME, {socketId: socket.id});
+            socket.to(games[gameId][0]).emit(Events.READY_TO_START, {socketId: socket.id});
         }
     });
 

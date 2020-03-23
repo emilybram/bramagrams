@@ -11,7 +11,7 @@ class Socket {
             app.playerId = playerId;
         });
 
-        socket.on(Events.JOINED_GAME, function({socketId}){
+        socket.on(Events.READY_TO_START, function({socketId}){
             app.setState({
                 waitingForOpponent: false
             });
