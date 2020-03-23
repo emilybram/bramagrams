@@ -6,6 +6,7 @@
     "body-parser": "^1.17.2",
     "clipboard": "^1.7.1",
     "express": "^4.15.3",
+    "flow-bin": "^0.121.0",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-router": "^4.1.2",
@@ -20,7 +21,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "predeploy": "npm run build"
+    "predeploy": "npm run build",
+    "flow": "flow"
   },
   "proxy": {
     "/": {

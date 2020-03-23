@@ -1,16 +1,17 @@
 import io from 'socket.io-client';
 import Utils from './utils';
+import Events  from './events';
 
 class Socket {
 
     static setup(app) { 
         const socket = io('/game');
 
-        socket.on('playerId', function(playerId){
+        socket.on(Events.CONNECTED, function(playerId){
             app.playerId = playerId;
         });
 
-        socket.on('secondPlayerJoin', function({socketId}){
+        socket.on(Events.JOINED_GAME, function({socketId}){
             app.setState({
                 waitingForOpponent: false
             });

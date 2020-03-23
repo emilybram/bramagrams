@@ -1,5 +1,7 @@
 'use strict';
 
+import Events from '../client/src/events';
+
 const app = require('./app');
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
@@ -14,17 +16,18 @@ const games = {};
 
 io.of('/game').on('connection', function(socket){
     console.log("socket connected");
+    
     socket.on('gameRoom', function({gameRoom: gameId}){
         console.log("Player " + socket.id + " joining game " + gameId);
         socket.gameRoom = gameId
         socket.join(gameId);
-        socket.emit('playerId', socket.id);
+        socket.emit(Events.CONNECTED, socket.id);
         if (!games[gameId]) {
             games[gameId] = [socket.id];
             socket.emit('firstPlayer');
         } else {
             games[gameId].push(socket.id);
-            socket.to(games[gameId][0]).emit('secondPlayerJoin', {socketId: socket.id});
+            socket.to(games[gameId][0]).emit(Events.JOINED_GAME, {socketId: socket.id});
         }
     });
 
