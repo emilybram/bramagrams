@@ -1,6 +1,6 @@
 'use strict';
 
-import Events from '../client/src/events';
+const Events = require('../client/src/events');
 
 const app = require('./app');
 const server = require('http').Server(app);

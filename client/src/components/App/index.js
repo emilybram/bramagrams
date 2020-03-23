@@ -6,6 +6,7 @@ import WordSection from '../WordSection';
 import InfoBox from '../InfoBox';
 import Utils from '../../utils';
 import Socket from '../../socket';
+import Events from '../../events';
 import './index.css';
 
 class App extends Component {
