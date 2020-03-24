@@ -1,6 +1,8 @@
 "use strict";
 
 const Events = require("../client/src/events");
+const Game = require("./Game");
+const Player = require("./Player");
 
 const app = require("./app");
 const server = require("http").Server(app);
@@ -15,13 +17,14 @@ server.listen(PORT, function() {
 const games = {};
 
 io.of("/game").on("connection", function(socket) {
-  console.log("socket connected");
+  console.log(`Socket connected: ${socket.id}`);
 
   socket.on("gameRoom", function({ gameRoom: gameId }) {
     console.log("Player " + socket.id + " joining game " + gameId);
     socket.gameRoom = gameId;
     socket.join(gameId);
     socket.emit(Events.CONNECTED, socket.id);
+
     if (!games[gameId]) {
       games[gameId] = [socket.id];
       socket.emit("firstPlayer");
@@ -46,21 +49,21 @@ io.of("/game").on("connection", function(socket) {
   });
 
   socket.on("word", function(word) {
-    console.log("Player " + socket.id + " submitted " + word);
+    console.log(`Player ${socket.id} submitted ${word}`);
     socket.to(socket.gameRoom).emit("word", word);
   });
 
   socket.on("letterFlip", function() {
-    console.log("Player " + socket.id + " flipped letter");
     socket.broadcast.to(socket.gameRoom).emit("letterFlip");
+    console.log(`Player ${socket.id} flipped letter`);
   });
 
   socket.on("endGame", function() {
-    console.log("Player " + socket.id + " ended game");
+    console.log(`Player ${socket.id} ended game`);
     socket.broadcast.to(socket.gameRoom).emit("endGame");
   });
 
   socket.on("disconnect", function() {
-    console.log("Player " + socket.id + " has disconnected.");
+    console.log(`Player ${socket.id} has disconnected.`);
   });
 });
