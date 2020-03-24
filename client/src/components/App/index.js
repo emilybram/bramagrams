@@ -38,6 +38,41 @@ class App extends Component {
     document.removeEventListener("keydown", this.handleKeyDown.bind(this));
   }
 
+  render() {
+    if (this.state.waitingForOpponent) {
+      return <SendURL gameId={this.props.gameId} />;
+    } else {
+      return (
+        <div className="App">
+          <Board letters={this.getFlippedLetters()} />
+          <WordBuilder letters={this.state.lettersCurrWord} />
+          <InfoBox
+            userEndGame={this.state.userEndGame}
+            opponentEndGame={this.state.opponentEndGame}
+            yourCount={this.state.yourWords.length}
+            opponentCount={this.state.opponentWords.length}
+            gameOver={false}
+            yourTurn={this.state.yourTurn}
+          />
+          <div className="AllWords">
+            <WordSection
+              words={this.state.yourWords}
+              className="YourWords"
+              title="Your Words"
+            />
+            <WordSection
+              words={this.state.opponentWords}
+              className="OpponentWords"
+              title="Opponent's Words"
+            />
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // listeners
+
   handleKeyDown(event) {
     if (this.state.waitingForOpponent) {
       // Game not started
@@ -134,37 +169,11 @@ class App extends Component {
     });
   }
 
-  render() {
-    if (this.state.waitingForOpponent) {
-      return <SendURL gameId={this.props.gameId} />;
-    } else {
-      return (
-        <div className="App">
-          <Board letters={this.state.lettersFlipped} />
-          <WordBuilder letters={this.state.lettersCurrWord} />
-          <InfoBox
-            userEndGame={this.state.userEndGame}
-            opponentEndGame={this.state.opponentEndGame}
-            yourCount={this.state.yourWords.length}
-            opponentCount={this.state.opponentWords.length}
-            gameOver={this.state.lettersUnflipped.length === 0}
-            yourTurn={this.state.yourTurn}
-          />
-          <div className="AllWords">
-            <WordSection
-              words={this.state.yourWords}
-              className="YourWords"
-              title="Your Words"
-            />
-            <WordSection
-              words={this.state.opponentWords}
-              className="OpponentWords"
-              title="Opponent's Words"
-            />
-          </div>
-        </div>
-      );
-    }
+  // helpers
+
+  getFlippedLetters() {
+    const { letters, flippedIndex } = this.state;
+    return letters.slice(0, flippedIndex);
   }
 }
 
