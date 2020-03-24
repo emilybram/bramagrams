@@ -31,8 +31,6 @@ class Socket {
 
     socket.on("firstPlayer", function() {
       app.setState({
-        lettersUnflipped: Utils.getShuffledLetters(),
-        lettersFlipped: [],
         yourTurn: true
       });
     });
