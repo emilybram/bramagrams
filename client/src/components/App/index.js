@@ -25,9 +25,9 @@ class App extends Component {
       opponentWords: []
     };
 
-        this.socket.emit('gameRoom', {gameRoom: this.props.gameId});
     this.socket = Socket.setup(this);
     // Tell server to add you to game room
+    this.socket.emit("gameRoom", { gameRoom: this.props.gameId });
   }
 
   componentWillMount() {
