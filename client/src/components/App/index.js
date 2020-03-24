@@ -18,8 +18,10 @@ class App extends Component {
       yourTurn: false,
       userEndGame: false,
       opponentEndGame: false,
+      letters: [],
       lettersFlipped: [],
       lettersUnflipped: [],
+      flippedIndex: 0,
       lettersCurrWord: [],
       yourWords: [],
       opponentWords: []
@@ -77,72 +79,58 @@ class App extends Component {
     if (this.state.waitingForOpponent) {
       // Game not started
       return;
-    } else if (event.keyCode === 32) {
-      // Spacebar
-      if (this.state.lettersUnflipped.length > 0 && this.state.yourTurn) {
-        this.setState({
-          yourTurn: false
-        });
-        this.flipLetter();
-        this.socket.emit("letterFlip");
-      }
-    } else if (event.keyCode === 13) {
-      // Enter
-      if (Utils.isValid(this.state.lettersCurrWord.join(""))) {
-        this.onWordSubmitted();
-      }
-    } else if (event.keyCode === 8) {
-      // Delete
-      if (this.state.lettersCurrWord.length > 0) {
-        this.onDelete();
-      }
-    } else if (event.keyCode === 49) {
-      // 1
-      if (this.state.lettersUnflipped.length == 0 && !this.state.userEndGame) {
-        this.setState({
-          userEndGame: true
-        });
-        this.socket.emit("endGame");
-      }
-    } else if (event.keyCode >= 65 && event.keyCode <= 90) {
-      // A through Z
-      const letter = Utils.keyCodes[event.keyCode].toUpperCase();
-      if (
-        this.state.lettersFlipped.includes(letter) &&
-        !this.state.userEndGame
-      ) {
-        this.onLetterTyped(letter);
-      }
+    }
+
+    switch (event.keyCode) {
+      case 32:
+        // Spacebar
+        return this.handleSpacebarPress();
+      case 13:
+        // Enter
+        return this.handleEnterPress();
+      case 8:
+        // Delete
+        return this.handleDeletePress();
+      default:
+        if (event.keyCode >= 65 && event.keyCode <= 90) {
+          // A through Z
+          const letter = Utils.keyCodes[event.keyCode].toUpperCase();
+          return this.handleLetterPress(letter);
+        }
     }
   }
 
-  onLetterTyped(letter) {
-    this.setState(prevState => {
-      const idx = prevState.lettersFlipped.indexOf(letter);
-      const lettersFlipped = prevState.lettersFlipped.filter(
-        (item, i) => i !== idx
-      );
+  // event handlers
 
-      return {
-        lettersCurrWord: [...prevState.lettersCurrWord, letter],
-        lettersFlipped
-      };
-    });
+  handleSpacebarPress() {
+    const { letters, flippedIndex, yourTurn } = this.state;
+
+    if (!yourTurn || flippedIndex >= letters.length - 1) {
+      return;
+    }
+
+    this.setState(
+      {
+        yourTurn: false
+      },
+      () => {
+        this.setState(
+          prevState => {
+            return {
+              flippedIndex: prevState.flippedIndex + 1
+            };
+          },
+          () => this.socket.emit("letterFlip")
+        );
+      }
+    );
   }
 
-  onDelete() {
-    this.setState(prevState => {
-      let lettersCurrWord = prevState.lettersCurrWord.slice(0);
-      const letter = lettersCurrWord.pop();
+  handleEnterPress() {
+    if (!Utils.isValid(this.state.lettersCurrWord.join(""))) {
+      return;
+    }
 
-      return {
-        lettersCurrWord,
-        lettersFlipped: [...prevState.lettersFlipped, letter]
-      };
-    });
-  }
-
-  onWordSubmitted() {
     const word = this.state.lettersCurrWord.join("");
     this.setState(prevState => {
       return {
@@ -153,19 +141,34 @@ class App extends Component {
     this.socket.emit("word", word);
   }
 
-  flipLetter() {
+  handleDeletePress() {
+    if (this.state.lettersCurrWord.length === 0) {
+      return;
+    }
+
     this.setState(prevState => {
-      const [flippedLetter, ...lettersUnflipped] = prevState.lettersUnflipped;
       return {
-        lettersFlipped: [...prevState.lettersFlipped, flippedLetter],
-        lettersUnflipped
+        lettersCurrWord: prevState.lettersCurrWord.slice(0)
       };
     });
   }
 
-  onOpponentEndGame() {
-    this.setState({
-      opponentEndGame: true
+  handleLetterPress(letter) {
+    const flippedLetters = this.getFlippedLetters();
+    if (!flippedLetters.includes(letter) || this.state.userEndGame) {
+      return;
+    }
+
+    this.setState(prevState => {
+      const idx = prevState.lettersFlipped.indexOf(letter);
+      const lettersFlipped = prevState.lettersFlipped.filter(
+        (item, i) => i !== idx
+      );
+
+      return {
+        lettersCurrWord: [...prevState.lettersCurrWord, letter],
+        lettersFlipped
+      };
     });
   }
 
