@@ -1,26 +1,32 @@
-import React from 'react';
-import { Route, Redirect } from 'react-router';
-import { BrowserRouter, withRouter } from 'react-router-dom';
+import React from "react";
+import { Route, Redirect } from "react-router";
+import { BrowserRouter, withRouter } from "react-router-dom";
 
-import App from './components/App';
-import Welcome from './components/Welcome';
+import App from "./components/App";
+import Welcome from "./components/Welcome";
 
 const newGameId = () => {
-  return Math.random().toString(36).slice(2, 8);
+  return Math.random()
+    .toString(36)
+    .slice(2, 8);
 };
 
-const Routes = (props) => (
+const Routes = props => (
   <BrowserRouter {...props}>
-     <div>
-        <Route exact path="/" component={Welcome} />
-        <Route exact path="/new" render={() => (<Redirect to={'/game/' + newGameId()}/>)}/>
-        <Route path="/game/:gameId" component={GameApp} />
+    <div>
+      <Route exact path="/" component={Welcome} />
+      <Route
+        exact
+        path="/new"
+        render={() => <Redirect to={"/game/" + newGameId()} />}
+      />
+      <Route path="/game/:gameId" component={GameApp} />
     </div>
   </BrowserRouter>
 );
 
 const GameApp = ({ match }) => {
-  return <App gameId={match.params.gameId} />
-}
+  return <App gameId={match.params.gameId} />;
+};
 
 export default Routes;
